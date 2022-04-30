@@ -23,9 +23,9 @@ func AddLetter(c chan string, combo string, alphabet string, length int) {
     }
 }
 
-func worker(wChan chan string, target uint32) {
+func worker(wChan chan string, target uint32, prefix string, suffix string) {
     for tString := range wChan {
-        if crc32.ChecksumIEEE([]byte(tString)) == target {
+        if crc32.ChecksumIEEE([]byte(prefix + tString + suffix)) == target {
             fmt.Println("Collision found:", tString)
         }
     }
@@ -37,20 +37,26 @@ func main() {
     // & 0xffffffff is to convert to uint
     // required since old python versions allowed negative values to be produced
     // hence its needed if you want to find a collision for a "negative" crc hash value
-    const target = -432570933 & 0xffffffff
+    const target = 2908412166 & 0xffffffff
+	const prefix = "prefix"
+	const suffix = "suffix"
     // max string length
-    maxLen := 5
+    maxLen := 117 - len(prefix) - len(suffix)
     // max number of workers - More workers doesn't mean faster bruteforce
     numWorkers := 8
-    // python printable alphabet excluding \t\n\r\x0b\x0c
-    alphabet := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}"
+
+	// python printable alphabet excluding \t\n\r\x0b\x0c
+
+	//alphabet := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}"
+	alphabet := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/=" // For Base64 URL-unsafe
+
 
     var wg sync.WaitGroup
     wChan := make(chan string, 1000)
     for i := 0; i < numWorkers; i++ {
         wg.Add(1)
         go func() {
-            worker(wChan, target)
+            worker(wChan, target, prefix, suffix) 
             wg.Done()
         }()
     }

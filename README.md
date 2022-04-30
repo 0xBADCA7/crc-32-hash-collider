@@ -1,3 +1,5 @@
+A fork of [fyxme/crc-32-hash-collider](https://github.com/fyxme/crc-32-hash-collider) with prefix/suffix support.
+
 # CRC-32 hash collider
 
 CRC-32 collision finder
